@@ -123,9 +123,16 @@ public class TicTacToe {
             printBoard();
             if (currentPlayer == 'X') {
                 System.out.print("Enter the coordinates: > ");
-                int row = scanner.nextInt() - 1;
-                int col = scanner.nextInt() - 1;
-                makeHumanMove(row, col);
+                try {
+                    int row = scanner.nextInt() - 1;
+                    int col = scanner.nextInt() - 1;
+                    makeHumanMove(row, col);
+                }
+                catch (Exception e) {
+                    System.out.println("Invalid move. Try again.");
+                    scanner.nextLine(); // Clear the input
+                    continue;
+                }
             } else {
                 System.out.println("Making move level \"easy\"");
                 makeComputerMove();
