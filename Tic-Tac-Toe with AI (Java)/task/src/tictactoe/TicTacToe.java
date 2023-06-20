@@ -6,11 +6,14 @@ import java.util.Scanner;
 public class TicTacToe {
 
     // Tic-Tac-Toe with AI (Java)/task/src/tictactoe/Main.java
-
     // We need to create a class TicTacToe
     // We have three fields: board, currentPlayer and gameOver
-    private char[][] board;
+    private Scanner scanner;
+    private final char[][] board;
     private char currentPlayer;
+    private String playerOne;
+    private String playerTwo;
+    private String command;
     private boolean gameOver;
 
     // We have one constructor: TicTacToe(), which initializes the board, currentPlayer and gameOver fields
@@ -44,17 +47,80 @@ public class TicTacToe {
         System.out.println("---------");
     }
 
+    // the initializePlayer() method initializes game and also sets playerOne
+    // and playerTwo to either a human ("user") or a computer player ("easy", "medium", "hard").
+    private void initializePlayer(){
+        scanner = new Scanner(System.in);
+
+        while (true) {
+            try {
+                System.out.print("Input command: > ");
+                String input = scanner.nextLine().trim();
+                String[] inputs = input.split("\\s+"); // separate the input
+                // into an array of strings using the whitespace as the
+                // delimiter
+                command = inputs[0];
+                if (command.equalsIgnoreCase("exit")) {
+                    System.exit(0); // exits the code
+                } else if (inputs.length != 3) {
+                    System.out.println("Bad parameters!");
+                    continue; // Restart the loop to prompt for input again
+                }
+                if (command.equalsIgnoreCase("start")) {
+                    gameOver = false;
+                    playerOne = inputs[1];
+                    playerTwo = inputs[2];
+                    if ((playerOne.equalsIgnoreCase("easy") || playerOne.equalsIgnoreCase("medium") ||
+                            playerOne.equalsIgnoreCase("hard") || playerOne.equalsIgnoreCase("user")) &&
+                            (playerTwo.equalsIgnoreCase("easy") || playerTwo.equalsIgnoreCase("medium") ||
+                                    playerTwo.equalsIgnoreCase("hard") || playerTwo.equalsIgnoreCase("user"))) {
+                        // Both playerOne and playerTwo match the specified words (case-insensitive)
+                        // Set matchingCondition to true to exit the while loop
+                        playerOne = playerOne.toLowerCase();
+                        playerTwo = playerTwo.toLowerCase();
+                        break;
+                    } else {
+                        System.out.println("Bad parameters!");
+                    }
+                } else {
+                    System.out.println("Bad parameters!");
+                }
+            } catch (Exception e) {
+                System.out.println("Bad parameters!");
+                scanner.nextLine(); // Clear the input
+            }
+        }
+    }
+
+    // the makeHumanMove() method makes a move for the human player.
+    private void makeHumanMove() {
+        boolean validMove = false;
+        while (!validMove) {
+            System.out.print("Enter the coordinates: > ");
+            try {
+                int row = scanner.nextInt() - 1;
+                int col = scanner.nextInt() - 1;
+                validMove = makeHumanMove(row, col);
+            } catch (Exception e) {
+                System.out.println("Invalid move. Try again.");
+                scanner.nextLine(); // Clear the input
+            }
+        }
+    }
+
     // the makeHumanMove() method makes a move for the human player. It asks
     // the user to enter a row and a column. If the move is valid, it sets the character at that position to 'X'.
     // Then it sets the current player to 'O'.
-    private void makeHumanMove(int row, int col) {
+    private boolean makeHumanMove(int row, int col) {
         if (row < 0 || row >= 3 || col < 0 || col >= 3 || board[row][col] != ' ') {
             System.out.println("Invalid move. Try again.");
-            return;
+            return false;
         }
 
         board[row][col] = currentPlayer;
         currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+        printBoard();
+        return true;
     }
 
     // the makeComputerMove() method makes a move for the computer player. It
@@ -70,6 +136,12 @@ public class TicTacToe {
 
         board[row][col] = currentPlayer;
         currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+        printBoard();
+    }
+
+    private void makeComputerMove(String player) {
+        System.out.printf("Making move level \"%s\"\n", player);
+        makeComputerMove();
     }
 
     // The isBoardFull() method checks if the board is full. It returns true if the board is full and false otherwise.
@@ -106,10 +178,23 @@ public class TicTacToe {
         if (board[0][0] == player && board[1][1] == player && board[2][2] == player) {
             return true;
         }
-        if (board[0][2] == player && board[1][1] == player && board[2][0] == player) {
+        return board[0][2] == player && board[1][1] == player && board[2][0] == player;
+    }
+
+    private boolean checkWinner() {
+        if (hasPlayerWon('X')) {
+            System.out.println("X wins");
+            initializePlayer();
+            return true;
+        } else if (hasPlayerWon('O')) {
+            System.out.println("O wins");
+            initializePlayer();
+            return true;
+        } else if (isBoardFull()) {
+            System.out.println("It's a tie");
+            initializePlayer();
             return true;
         }
-
         return false;
     }
 
@@ -117,42 +202,21 @@ public class TicTacToe {
     // We use a while loop within the method to keep playing the game.
     // We incorporate all the methods in the TicTacToe class.
     public void play() {
-        Scanner scanner = new Scanner(System.in);
-
+        initializePlayer();
+        printBoard();
         while (!gameOver) {
-            printBoard();
-            if (currentPlayer == 'X') {
-                System.out.print("Enter the coordinates: > ");
-                try {
-                    int row = scanner.nextInt() - 1;
-                    int col = scanner.nextInt() - 1;
-                    makeHumanMove(row, col);
-                }
-                catch (Exception e) {
-                    System.out.println("Invalid move. Try again.");
-                    scanner.nextLine(); // Clear the input
-                    continue;
-                }
-            } else {
-                System.out.println("Making move level \"easy\"");
-                makeComputerMove();
-            }
 
-            if (hasPlayerWon('X')) {
-                printBoard();
-                System.out.println("X wins");
-                gameOver = true;
-            } else if (hasPlayerWon('O')) {
-                printBoard();
-                System.out.println("O wins");
-                gameOver = true;
-            } else if (isBoardFull()) {
-                printBoard();
-                System.out.println("It's a tie");
-                gameOver = true;
+            if (playerOne.equalsIgnoreCase("user")) {
+                makeHumanMove();
+            } else if (playerOne.equalsIgnoreCase("easy")) {
+                makeComputerMove(playerOne);
             }
+            if (playerTwo.equalsIgnoreCase("user")) {
+                makeHumanMove();
+            } else if (playerTwo.equalsIgnoreCase("easy")) {
+                makeComputerMove(playerTwo);
+            }
+            gameOver = checkWinner();
         }
-
-        scanner.close();
     }
 }
