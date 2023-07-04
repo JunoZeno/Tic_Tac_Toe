@@ -123,10 +123,115 @@ public class TicTacToe {
         return true;
     }
 
-    // the makeComputerMove() method makes a move for the computer player. It
-    // generates a random move row and column. If the character is ' ' it
-    // sets the character to 'O'. Then it sets the current player to 'X'.
-    private void makeComputerMove() {
+    // the makeComputerMove(String player) method makes a move for the computer
+    // player. As of right now if the input is "medium" it will check for a
+    // winning move or blocking move and if it finds a winning move it will
+    // block it. If the input is anything else it will make a random move.
+    private void makeComputerMove(String player) {
+        System.out.printf("Making move level \"%s\"\n", player);
+
+        if (player.equalsIgnoreCase("medium")) {
+            if (checkWinningMove(currentPlayer)) {
+                printBoard();
+                return;
+            } else if (checkBlockingMove(currentPlayer)) {
+                printBoard();
+                return;
+            } else {
+                makeRandomMove();
+                printBoard();
+            }
+        } else {
+            // placeholder. Can be removed later
+            makeRandomMove();
+            printBoard();
+        }
+    }
+
+    private boolean checkWinningMove(char player) {
+        // Check rows for a winning move
+        for (int row = 0; row < 3; row++) {
+            if (board[row][0] == player && board[row][1] == player && board[row][2] == ' ') {
+                board[row][2] = currentPlayer;
+                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+                return true;
+            }
+            if (board[row][0] == player && board[row][2] == player && board[row][1] == ' ') {
+                board[row][1] = currentPlayer;
+                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+                return true;
+            }
+            if (board[row][1] == player && board[row][2] == player && board[row][0] == ' ') {
+                board[row][0] = currentPlayer;
+                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+                return true;
+            }
+        }
+
+        // Check columns for a winning move
+        for (int col = 0; col < 3; col++) {
+            if (board[0][col] == player && board[1][col] == player && board[2][col] == ' ') {
+                board[2][col] = currentPlayer;
+                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+                return true;
+            }
+            if (board[0][col] == player && board[2][col] == player && board[1][col] == ' ') {
+                board[1][col] = currentPlayer;
+                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+                return true;
+            }
+            if (board[1][col] == player && board[2][col] == player && board[0][col] == ' ') {
+                board[0][col] = currentPlayer;
+                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+                return true;
+            }
+        }
+
+        // Check diagonals for a winning move
+        if (board[0][0] == player && board[1][1] == player && board[2][2] == ' ') {
+            board[2][2] = currentPlayer;
+            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+            return true;
+        }
+        if (board[0][0] == player && board[2][2] == player && board[1][1] == ' ') {
+            board[1][1] = currentPlayer;
+            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+            return true;
+        }
+        if (board[1][1] == player && board[2][2] == player && board[0][0] == ' ') {
+            board[0][0] = currentPlayer;
+            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+            return true;
+        }
+        if (board[0][2] == player && board[1][1] == player && board[2][0] == ' ') {
+            board[2][0] = currentPlayer;
+            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+            return true;
+        }
+        if (board[0][2] == player && board[2][0] == player && board[1][1] == ' ') {
+            board[1][1] = currentPlayer;
+            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+            return true;
+        }
+        if (board[1][1] == player && board[2][0] == player && board[0][2] == ' ') {
+            board[0][2] = currentPlayer;
+            currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+            return true;
+        }
+
+        return false;
+    }
+
+    // The checkBlockingMove() method checks if the player has a blocking move.
+    // It returns true if the player has a blocking move and false otherwise.
+    private boolean checkBlockingMove(char player) {
+        player = (player == 'X') ? 'O' : 'X';
+
+        return checkWinningMove(player);
+    }
+
+    // The makeRandomMove() method makes a random move for the computer player.
+    private void makeRandomMove() {
         Random random = new Random();
         int row, col;
         do {
@@ -136,12 +241,6 @@ public class TicTacToe {
 
         board[row][col] = currentPlayer;
         currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
-        printBoard();
-    }
-
-    private void makeComputerMove(String player) {
-        System.out.printf("Making move level \"%s\"\n", player);
-        makeComputerMove();
     }
 
     // The isBoardFull() method checks if the board is full. It returns true if the board is full and false otherwise.
@@ -182,16 +281,16 @@ public class TicTacToe {
     }
 
     private boolean checkWinner() {
-        if (hasPlayerWon('X')) {
-            System.out.println("X wins");
+        if (isBoardFull()) {
+            System.out.println("Draw");
             initializePlayer();
-            return true;
+            return gameOver;
         } else if (hasPlayerWon('O')) {
             System.out.println("O wins");
             initializePlayer();
             return true;
-        } else if (isBoardFull()) {
-            System.out.println("It's a tie");
+        } else if (hasPlayerWon('X')) {
+            System.out.println("X wins");
             initializePlayer();
             return true;
         }
@@ -208,12 +307,14 @@ public class TicTacToe {
 
             if (playerOne.equalsIgnoreCase("user")) {
                 makeHumanMove();
-            } else if (playerOne.equalsIgnoreCase("easy")) {
+            } else if (playerOne.equalsIgnoreCase("easy") || playerOne.equalsIgnoreCase("medium")) {
                 makeComputerMove(playerOne);
             }
+            gameOver = checkWinner();
+
             if (playerTwo.equalsIgnoreCase("user")) {
                 makeHumanMove();
-            } else if (playerTwo.equalsIgnoreCase("easy")) {
+            } else if (playerTwo.equalsIgnoreCase("easy") || playerTwo.equalsIgnoreCase("medium")) {
                 makeComputerMove(playerTwo);
             }
             gameOver = checkWinner();
